@@ -1,0 +1,62 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+temp/
+.swcache/
+
+# Coverage
+coverage
+
+# Transpiled files
+build/
+
+# VS Code
+.vscode
+!.vscode/tasks.js
+
+# Emacs
+*~
+*#
+
+# JetBrains IDEs
+.idea/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+.DS_Store
+
+package-lock.json
+/lib
+*.rdb
+.env
+
+keyfile.json
+ar_key.json
+eth_key.json
+
+/bundles
+wallet.json
+pnpm-lock.yaml
+.devcontainer
+reference_install_script.sh
+minio.env
+keys.js
+/dump
+whitelist.json
+ecosystem.config.js
+.env.example
+config.json
+local.ecosystem.config.js
+/chunks
+/validators
+/tmp
