@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES6",
     "module": "commonjs",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "importHelpers": true,
-    "declaration": false,
-    "outDir": "lib",
+    "declaration": true,
+    "outDir": "build",
     "jsx": "react",
     "lib": [
       "dom",
@@ -17,7 +17,6 @@
     ],
     "esModuleInterop": true,
     "alwaysStrict": true,
-    "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
@@ -25,17 +24,10 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "resolveJsonModule": true
   },
   "include": [
-    "src/**/*",
-    "crons/**/*",
-    "tests/**/*",
-    "migrations/**/*",
-    "knexfile.ts",
-    "scripts/*.ts"
-  ],
-  "exclude": [
-    "src/server/ws/*.ts"
+    "src/**/*"
   ]
 }
