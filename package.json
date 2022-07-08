@@ -1,11 +1,10 @@
 {
-  "name": "bundler-node",
-  "version": "0.2.0",
-  "description": "Official Bundlr node implementation",
-  "types": "lib/index.d.ts",
+  "name": "@bundlr-network/testnet-cli",
+  "version": "0.0.1",
+  "description": "CLI for interacting with testnet contracts",
   "type": "commonjs",
   "files": [
-    "src/**/*"
+    "build/**/*"
   ],
   "author": "Josh Benaron <joshbenaron@gmail.com>",
   "license": "Apache-2.0",
@@ -16,7 +15,7 @@
     "lint:fix": "eslint src/** --fix"
   },
   "bin": {
-    "Bundlr-testnet": "./build/src/cli.js"
+    "testnet-cli": "./build/src/cli.js"
   },
   "devDependencies": {
     "@types/node": "^16.4.0",
