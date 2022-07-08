@@ -29,35 +29,34 @@ program
     .argument("<contract>", "Address of the validator contract to join")
     .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
     .option("-w --wallet <string>", "Path to the wallet file to load and use for interactions", "./wallet.json")
-    .option("-c --contract <string>", "override token contract address", defaults.tokenContract)
     .requiredOption("-u --url <string>", "URL for the validator you want to add")
     .requiredOption("-s --stake <string>", "Number of tokens to provide as a stake")
 
-    .action(async (contract, args) => {
+    .action(async (contract, opts) => {
         try {
 
-            const { wallet, warp } = await commonInit(args)
+            const { wallet, warp } = await commonInit(opts)
 
-            const validatorUrl = new URL(args.url);
+            const validatorUrl = new URL(opts.url);
 
             // connect to token, assign allowance of stake to validator contract for foreign call
 
-            const tokenConnection = await tokenConnect(warp, args.contract, wallet);
+            const tokenConnection = await tokenConnect(warp, defaults.tokenContract, wallet);
 
 
             const connection = await validatorConnect(warp, contract, wallet);
 
             // get validator contract and determine minimum stake
             const validatorState = await connection.readState()
-            if (BigInt(args.stake) < BigInt(validatorState.state.minimumStake)) {
-                throw new Error(`Stake ${args.stake} is lower than the minimum required: ${validatorState.state.minimumStake}`)
+            if (BigInt(opts.stake) < BigInt(validatorState.state.minimumStake)) {
+                throw new Error(`Stake ${opts.stake} is lower than the minimum required: ${validatorState.state.minimumStake}`)
             }
 
-            await tokenConnection.approve(contract, BigInt(args.stake))
+            await tokenConnection.approve(contract, BigInt(opts.stake))
 
             // join
 
-            const res = await connection.join(BigInt(args.stake), validatorUrl);
+            const res = await connection.join(BigInt(opts.stake), validatorUrl);
 
             console.log(res);
         } catch (e) {
@@ -71,13 +70,13 @@ program
     .argument("<to>", "address to transfer the tokens to")
     .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
     .option("-w --wallet <string>", "Path to the wallet file to load and use for interactions", "./wallet.json")
-    .option("-c --contract <string>", "Optional: Address for the token contract", defaults.tokenContract)
+
     .action(async (amount, to, opts) => {
         try {
             console.log({ amount, to })
             const { wallet, warp } = await commonInit(opts)
 
-            const connection = await tokenConnect(warp, opts.contract, wallet);
+            const connection = await tokenConnect(warp, defaults.tokenContract, wallet);
             const res = await connection.transfer(to, BigInt(amount));
 
             console.log(res);
@@ -92,13 +91,13 @@ program
     .command("balance").description("gets the token balance of a specified address")
     .argument("<address>", "address to query")
     .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
-    .option("-c --contract <string>", "Optional: Address for the token contract", defaults.tokenContract)
-    .action(async (address, args) => {
+
+    .action(async (address, opts) => {
         try {
-            const { warp } = await commonInit(args)
+            const { warp } = await commonInit(opts)
 
             const contract = new TokenContractImpl(
-                args.contract,
+                defaults.tokenContract,
                 warp,
                 warp.useWarpGwInfo
             ).setEvaluationOptions({
