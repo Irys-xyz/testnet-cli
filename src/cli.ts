@@ -16,8 +16,8 @@ import { connect as tokenConnect, TokenContract, TokenContractImpl } from "./tok
 // LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
 
 export const defaults = {
-    tokenContract: "JV1AViSVEi8VEshP5sEyv_TZWVw8Ye8oGjIxuIvARbA",
-    bundlerContract: "8P1rfHRwkNVhX0kw_SLnoaq3wWtvlhB8DSJG2qzdj0E"
+    tokenContract: "SZRysVHlpctmmHVgerapLFLtPQzluhG_rJHyV3h2FI0",
+    bundlerContract: "nwjxyBxAldxBF0M0zR1NRBx-sD9baxVL1I7OdNnGOrg"
 }
 
 const program = new Command();
