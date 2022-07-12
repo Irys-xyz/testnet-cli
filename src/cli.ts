@@ -10,14 +10,16 @@ import { connect as validatorConnect } from "./validator";
 import { connect as tokenConnect, TokenContract, TokenContractImpl } from "./token"
 
 
+export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
 // import { LoggerFactory } from "warp-contracts"
 // LoggerFactory.INST.logLevel("error");
 // LoggerFactory.INST.logLevel("trace", "WASM:Rust");
 // LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
 
 export const defaults = {
-    tokenContract: "SZRysVHlpctmmHVgerapLFLtPQzluhG_rJHyV3h2FI0",
-    bundlerContract: "nwjxyBxAldxBF0M0zR1NRBx-sD9baxVL1I7OdNnGOrg"
+    tokenContract: "I3wlJeBoK2wuQakDkHDC3ZEVcpfZcJUbRJm4NCgoxeg",
+    bundlerContract: "IJi1NK92gHoAfUFK-0ssQKGpLBTs8eEkm3TrLEQgdPg"
 }
 
 const program = new Command();
@@ -43,7 +45,6 @@ program
 
             const tokenConnection = await tokenConnect(warp, defaults.tokenContract, wallet);
 
-
             const connection = await validatorConnect(warp, contract, wallet);
 
             // get validator contract and determine minimum stake
@@ -54,11 +55,11 @@ program
 
             await tokenConnection.approve(contract, BigInt(opts.stake))
 
-            // join
+            await sleep(15_000)
 
             const res = await connection.join(BigInt(opts.stake), validatorUrl);
 
-            console.log(res);
+            console.log(JSON.stringify(res));
         } catch (e) {
             console.log(`Error joining - ${e.stack ?? e.message ?? e}`)
         }
@@ -119,13 +120,21 @@ async function commonInit(args): Promise<{ wallet: ArWallet | null, warp: Warp, 
 
     const wallet = args.wallet ? await readJwk(args.wallet) : null
 
+    const urlParams = {
+        host: arweaveUrl.hostname,
+        port: arweaveUrl.port ? arweaveUrl.port : defaultPort(arweaveUrl.protocol),
+        protocol: arweaveUrl.protocol.split(":")[0], // URL holds colon at the end of the protocol
+    }
+
     const arweave: Arweave = Arweave.init({
         host: arweaveUrl.hostname,
         port: arweaveUrl.port ? arweaveUrl.port : defaultPort(arweaveUrl.protocol),
         protocol: arweaveUrl.protocol.split(":")[0], // URL holds colon at the end of the protocol
     });
 
-    const warp = WarpNodeFactory.memCached(arweave);
+    console.log(JSON.stringify(urlParams))
+
+    const warp = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
     return { wallet, warp, arweave }
 }
 
