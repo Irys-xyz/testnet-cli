@@ -8,12 +8,13 @@ import { version } from "../package.json"
 import { defaultPort, readJwk } from "./lib";
 import { connect as validatorConnect } from "./validator";
 import { connect as tokenConnect, TokenContract, TokenContractImpl } from "./token"
+import ora, { Ora } from "ora";
 
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-// import { LoggerFactory } from "warp-contracts"
-// LoggerFactory.INST.logLevel("error");
+import { LoggerFactory } from "warp-contracts"
+LoggerFactory.INST.logLevel("fatal");
 // LoggerFactory.INST.logLevel("trace", "WASM:Rust");
 // LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
 
@@ -35,6 +36,7 @@ program
     .requiredOption("-s --stake <string>", "Number of tokens to provide as a stake")
 
     .action(async (contract, opts) => {
+        let spinny: Ora
         try {
 
             const { wallet, warp } = await commonInit(opts)
@@ -53,14 +55,23 @@ program
                 throw new Error(`Stake ${opts.stake} is lower than the minimum required: ${validatorState.state.minimumStake}`)
             }
 
+            spinny = ora("Approving validator contract....").start()
+
+
             await tokenConnection.approve(contract, BigInt(opts.stake))
 
+            spinny.text = "Staking in contract..."
             await sleep(15_000)
-
+            spinny.text = "Joining validator contract..."
             const res = await connection.join(BigInt(opts.stake), validatorUrl);
+            spinny.succeed("Done!")
 
             console.log(JSON.stringify(res));
         } catch (e) {
+            if (spinny) {
+                spinny.fail(`Error joining - ${e.stack ?? e.message ?? e}`)
+                return
+            }
             console.log(`Error joining - ${e.stack ?? e.message ?? e}`)
         }
     })
