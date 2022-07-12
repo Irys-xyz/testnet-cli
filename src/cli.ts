@@ -120,19 +120,11 @@ async function commonInit(args): Promise<{ wallet: ArWallet | null, warp: Warp, 
 
     const wallet = args.wallet ? await readJwk(args.wallet) : null
 
-    const urlParams = {
-        host: arweaveUrl.hostname,
-        port: arweaveUrl.port ? arweaveUrl.port : defaultPort(arweaveUrl.protocol),
-        protocol: arweaveUrl.protocol.split(":")[0], // URL holds colon at the end of the protocol
-    }
-
     const arweave: Arweave = Arweave.init({
         host: arweaveUrl.hostname,
         port: arweaveUrl.port ? arweaveUrl.port : defaultPort(arweaveUrl.protocol),
         protocol: arweaveUrl.protocol.split(":")[0], // URL holds colon at the end of the protocol
     });
-
-    console.log(JSON.stringify(urlParams))
 
     const warp = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
     return { wallet, warp, arweave }
