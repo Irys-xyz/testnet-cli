@@ -3,7 +3,6 @@
 
 import {
     ArWallet,
-    BundleInteractionResponse,
     Contract,
     HandlerBasedContract,
     Warp,
@@ -149,11 +148,11 @@ export interface ValidatorsContract extends Contract<State> {
     token(): Promise<string>;
     epoch(): Promise<{ seq: string; tx: string; height: string }>;
     epochDuration(): Promise<number>;
-    updateEpoch(): Promise<string | BundleInteractionResponse>;
-    join(stake: bigint, url: URL): Promise<string | BundleInteractionResponse>;
-    leave(): Promise<string | BundleInteractionResponse>;
-    proposeSlash(proposal: SlashProposal): Promise<string | BundleInteractionResponse>;
-    voteSlash(tx: string, vote: "for" | "against"): Promise<string | BundleInteractionResponse>;
+    updateEpoch(): Promise<string | null>;
+    join(stake: bigint, url: URL): Promise<string | null>;
+    leave(): Promise<string | null>;
+    proposeSlash(proposal: SlashProposal): Promise<string | null>;
+    voteSlash(tx: string, vote: "for" | "against"): Promise<string | null>;
 }
 
 class ValidatorsContractImpl
@@ -257,13 +256,13 @@ class ValidatorsContractImpl
         return interactionResult.result as string[];
     }
 
-    async updateEpoch(): Promise<string | BundleInteractionResponse> {
+    async updateEpoch(): Promise<string | null> {
         return this.write({
             function: "updateEpoch",
         });
     }
 
-    async join(stake: bigint, url: URL): Promise<string | BundleInteractionResponse> {
+    async join(stake: bigint, url: URL): Promise<string | null> {
         return this.write({
             function: "join",
             stake: stake.toString(),
@@ -271,20 +270,20 @@ class ValidatorsContractImpl
         });
     }
 
-    async leave(): Promise<string | BundleInteractionResponse> {
+    async leave(): Promise<string | null> {
         return this.write({
             function: "leave",
         });
     }
 
-    async proposeSlash(proposal: SlashProposal): Promise<string | BundleInteractionResponse> {
+    async proposeSlash(proposal: SlashProposal): Promise<string | null> {
         return this.write({
             function: "proposeSlash",
             proposal,
         });
     }
 
-    async voteSlash(tx: string, vote: "for" | "against"): Promise<string | BundleInteractionResponse> {
+    async voteSlash(tx: string, vote: "for" | "against"): Promise<string | null> {
         return this.write({
             function: "voteSlash",
             tx,
@@ -292,8 +291,12 @@ class ValidatorsContractImpl
         });
     }
 
-    write(input: any,): Promise<string | BundleInteractionResponse> {
-        return this._mainnet ? this.bundleInteraction(input) : this.writeInteraction(input);
+    async write(input: any,): Promise<string | null> {
+        const dwRes = await this.dryWrite(input)
+        if (dwRes.type !== "ok") {
+            throw new Error("Simulated contract interaction failed!")
+        }
+        return this._mainnet ? this.bundleInteraction(input).then(r => r.originalTxId) : this.writeInteraction(input);
     }
 }
 

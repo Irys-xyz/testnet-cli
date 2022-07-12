@@ -1,4 +1,4 @@
-import { ArWallet, BundleInteractionResponse, Contract, HandlerBasedContract, Warp } from "warp-contracts";
+import { ArWallet, Contract, HandlerBasedContract, Warp } from "warp-contracts";
 
 export type State = {
     bundlers: { [key: string]: string | null };
@@ -14,12 +14,12 @@ export interface BundlersContract extends Contract<State> {
     withdrawDelay(): Promise<number>;
     stake(): Promise<bigint>;
     token(): Promise<string>;
-    join(): Promise<string | BundleInteractionResponse>;
-    leave(): Promise<string | BundleInteractionResponse>;
-    withdraw(): Promise<string | BundleInteractionResponse>;
-    syncSlash(): Promise<string | BundleInteractionResponse>;
-    addAllowedInteractor(address: string): Promise<string | BundleInteractionResponse>;
-    removeAllowedInteractor(address: string): Promise<string | BundleInteractionResponse>;
+    join(): Promise<string | null>;
+    leave(): Promise<string | null>;
+    withdraw(): Promise<string | null>;
+    syncSlash(): Promise<string | null>;
+    addAllowedInteractor(address: string): Promise<string | null>;
+    removeAllowedInteractor(address: string): Promise<string | null>;
 }
 
 class BundlersContractImpl
@@ -83,47 +83,50 @@ class BundlersContractImpl
         return interactionResult.result as number;
     }
 
-    async join(): Promise<string | BundleInteractionResponse> {
+    async join(): Promise<string | null> {
         return this.write({
             function: "join",
         });
     }
 
-    async leave(): Promise<string | BundleInteractionResponse> {
+    async leave(): Promise<string | null> {
         return this.write({
             function: "leave",
         });
     }
 
-    async withdraw(): Promise<string | BundleInteractionResponse> {
+    async withdraw(): Promise<string | null> {
         return this.write({
             function: "withdraw",
         });
     }
 
-    async syncSlash(): Promise<string | BundleInteractionResponse> {
+    async syncSlash(): Promise<string | null> {
         return this.write({
             function: "syncSlash",
         });
     }
 
-    async addAllowedInteractor(address: string): Promise<string | BundleInteractionResponse> {
+    async addAllowedInteractor(address: string): Promise<string | null> {
         return this.write({
             function: "addAllowedInteractor",
             interactor: address,
         });
     }
 
-    async removeAllowedInteractor(address: string): Promise<string | BundleInteractionResponse> {
+    async removeAllowedInteractor(address: string): Promise<string | null> {
         return this.write({
             function: "removeAllowedInteractor",
             interactor: address,
         });
     }
 
-    write(input: any,): Promise<string | BundleInteractionResponse> {
-        console.log(this._mainnet);
+    async write(input: any,): Promise<string | null> {
 
+        const dwRes = await this.dryWrite(input)
+        if (dwRes.type !== "ok") {
+            throw new Error("Simulated contract interaction failed!")
+        }
         return this._mainnet ? this.bundleInteraction(input).then(r => r.originalTxId) : this.writeInteraction(input);
     }
 }

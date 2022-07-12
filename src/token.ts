@@ -1,5 +1,5 @@
 
-import { ArWallet, BundleInteractionResponse, Contract, HandlerBasedContract, Warp } from "warp-contracts";
+import { ArWallet, Contract, HandlerBasedContract, Warp } from "warp-contracts";
 
 export type TokenState = {
     ticker: string;
@@ -70,11 +70,11 @@ export interface TokenContract extends Contract<TokenState> {
     symbol(): Promise<string>;
     totalSupply(): Promise<bigint>;
 
-    approve(spender: string, value: bigint): Promise<string | BundleInteractionResponse>;
-    burn(amount: bigint): Promise<string | BundleInteractionResponse>;
-    burnFrom(from: string, amount: bigint): Promise<string | BundleInteractionResponse>;
-    transfer(to: string, value: bigint): Promise<string | BundleInteractionResponse>;
-    transferFrom(from: string, to: string, value: bigint): Promise<string | BundleInteractionResponse>;
+    approve(spender: string, value: bigint): Promise<string | null>;
+    burn(amount: bigint): Promise<string | null>;
+    burnFrom(from: string, amount: bigint): Promise<string | null>;
+    transfer(to: string, value: bigint): Promise<string | null>;
+    transferFrom(from: string, to: string, value: bigint): Promise<string | null>;
 }
 
 export class TokenContractImpl
@@ -145,14 +145,14 @@ export class TokenContractImpl
         );
     }
 
-    async burn(amount: bigint): Promise<string | BundleInteractionResponse> {
+    async burn(amount: bigint): Promise<string | null> {
         return await this.write({
             function: "burn",
             amount: amount.toString(),
         });
     }
 
-    async burnFrom(from: string, amount: BigInt): Promise<string | BundleInteractionResponse> {
+    async burnFrom(from: string, amount: BigInt): Promise<string | null> {
         return await this.write({
             function: "burnFrom",
             from,
@@ -160,7 +160,7 @@ export class TokenContractImpl
         });
     }
 
-    async transfer(to: string, value: bigint): Promise<string | BundleInteractionResponse> {
+    async transfer(to: string, value: bigint): Promise<string | null> {
         return await this.write({
             function: "transfer",
             to,
@@ -168,7 +168,7 @@ export class TokenContractImpl
         });
     }
 
-    async transferFrom(from: string, to: string, value: BigInt): Promise<string | BundleInteractionResponse> {
+    async transferFrom(from: string, to: string, value: BigInt): Promise<string | null> {
         return await this.write({
             function: "transferFrom",
             from,
@@ -177,7 +177,7 @@ export class TokenContractImpl
         });
     }
 
-    async approve(spender: string, value: BigInt): Promise<string | BundleInteractionResponse> {
+    async approve(spender: string, value: BigInt): Promise<string | null> {
         return await this.write({
             function: "approve",
             spender,
@@ -204,8 +204,12 @@ export class TokenContractImpl
         );
     }
 
-    write(input: any): Promise<string | BundleInteractionResponse> {
-        return this._mainnet ? this.bundleInteraction(input) : this.writeInteraction(input);
+    async write(input: any): Promise<string | null> {
+        const dwRes = await this.dryWrite(input)
+        if (dwRes.type !== "ok") {
+            throw new Error("Simulated contract interaction failed!")
+        }
+        return this._mainnet ? this.bundleInteraction(input).then(r => r.originalTxId) : this.writeInteraction(input);
     }
 }
 
