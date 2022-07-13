@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --no-warnings
 // do not remove the above line!
 
 import Arweave from "arweave";
