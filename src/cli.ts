@@ -30,7 +30,7 @@ program.version(version);
 program
     .command("join")
     .argument("<contract>", "Address of the validator contract to join")
-    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
+    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.testnet1.bundlr.network")
     .option("-w --wallet <string>", "Path to the wallet file to load and use for interactions", "./wallet.json")
     .requiredOption("-u --url <string>", "URL for the validator you want to add")
     .requiredOption("-s --stake <string>", "Number of tokens to provide as a stake")
@@ -64,13 +64,14 @@ program
             await sleep(15_000)
             spinny.text = "Joining validator contract..."
             const res = await connection.join(BigInt(opts.stake), validatorUrl);
+            await sleep(15_000)
             spinny.succeed("Done!")
 
             console.log(JSON.stringify(res));
         } catch (e) {
             if (spinny) {
                 spinny.fail(`Error joining - ${e.stack ?? e.message ?? e}`)
-                return
+                return;
             }
             console.log(`Error joining - ${e.stack ?? e.message ?? e}`)
         }
@@ -80,7 +81,7 @@ program
     .command("transfer").description("Transfers <amount> tokens to <destination>")
     .argument("<amount>", "amount to transfer")
     .argument("<to>", "address to transfer the tokens to")
-    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
+    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.testnet1.bundlr.network")
     .option("-w --wallet <string>", "Path to the wallet file to load and use for interactions", "./wallet.json")
 
     .action(async (amount, to, opts) => {
@@ -102,7 +103,7 @@ program
 program
     .command("balance").description("gets the token balance of a specified address")
     .argument("<address>", "address to query")
-    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.net")
+    .option("-g --gateway <string>", "URL for the Arweave gateway to use", "http://arweave.testnet1.bundlr.network")
 
     .action(async (address, opts) => {
         try {
