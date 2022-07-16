@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --no-warnings
+#!/usr/bin/env NODE_NO_WARNINGS=1 node
 // do not remove the above line!
 
 import Arweave from "arweave";
@@ -7,7 +7,7 @@ import { ArWallet, Warp, WarpNodeFactory } from "warp-contracts";
 import { version } from "../package.json"
 import { defaultPort, readJwk } from "./lib";
 import { connect as validatorConnect } from "./validator";
-import { connect as tokenConnect, TokenContract, TokenContractImpl } from "./token"
+import { connect as tokenConnect, /* TokenContract, TokenContractImpl */ } from "./token"
 import ora, { Ora } from "ora";
 
 
@@ -15,6 +15,7 @@ export const sleep = (ms: number): Promise<void> => new Promise((resolve) => set
 
 import { LoggerFactory } from "warp-contracts"
 import axios from "axios";
+
 LoggerFactory.INST.logLevel("fatal");
 // LoggerFactory.INST.logLevel("trace", "WASM:Rust");
 // LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
@@ -112,26 +113,15 @@ program
 program
     .command("balance").description("gets the token balance of a specified address")
     .argument("<address>", "address to query")
-    .option("-g --gateway <string>", "URL for the Arweave gateway to use", defaultGateway)
+    /* .option("-g --gateway <string>", "URL for the Arweave gateway to use", defaultGateway) */
 
-    .action(async (address, opts) => {
+    .action(async (address, /* opts */) => {
         let spinny: Ora
         try {
-
             spinny = ora("Checking balance...").start()
-            const { warp, token } = await commonInit(opts)
-
-            const contract = new TokenContractImpl(
-                token,
-                warp,
-                warp.useWarpGwInfo
-            ).setEvaluationOptions({
-                internalWrites: true,
-            }) as TokenContract;
-
-            const balance = (await contract.balanceOf(address)).balance
-            spinny.succeed(`Balance of address ${address} - ${balance.toString()}`)
-
+            const { state } = (await axios.get(`${faucet}/contract/token`)).data
+            const balance = state.balances[address] ?? 0
+            spinny.succeed(`Balance of address ${address} - ${balance}`)
         } catch (e) {
             if (spinny) {
                 spinny.fail(`Error getting balance - ${e.stack ?? e.message ?? e}`)
@@ -140,6 +130,40 @@ program
             console.log(`Error getting balance - ${e.stack ?? e.message ?? e}`)
         }
     })
+
+// program
+//     .command("leave").description("Leaves as a validator")
+//     .argument("<contract>", "Address of the validator contract to join")
+//     .option("-g --gateway <string>", "URL for the Arweave gateway to use", defaultGateway)
+//     .option("-w --wallet <string>", "Path to the wallet file to load and use for interactions", "./wallet.json")
+//     .action(async (contract, opts) => {
+//         let spinny: Ora
+//         try {
+
+//             spinny = ora("Checking leave status...").start()
+
+//             const { wallet, warp, token } = await commonInit(opts)
+//             const connection = await validatorConnect(warp, contract, wallet)
+
+//             // const connection = await tokenConnect(warp, token, wallet);
+//             // await connection.transfer(to, BigInt(amount));
+//             const currentValidators = (await connection.epoch())
+
+
+//             spinny.succeed("Transfer complete!")
+
+//         } catch (e) {
+//             if (spinny) {
+//                 spinny.fail(`Error transferring - ${e.stack ?? e.message ?? e}`)
+//                 return
+//             }
+//             console.log(`Error transferring - ${e.stack ?? e.message ?? e}`)
+
+//         }
+//     })
+
+
+
 
 
 async function commonInit(args): Promise<{ wallet: ArWallet | null, warp: Warp, arweave: Arweave, token: string, bundler: string }> {
