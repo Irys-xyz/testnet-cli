@@ -18,9 +18,9 @@ export const sleep = (ms: number): Promise<void> => new Promise((resolve) => set
 import { LoggerFactory } from "warp-contracts"
 import axios from "axios";
 
-LoggerFactory.INST.logLevel("fatal");
-LoggerFactory.INST.logLevel("trace", "WASM:Rust");
-LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
+LoggerFactory.INST.logLevel("error");
+// LoggerFactory.INST.logLevel("trace", "WASM:Rust");
+// LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
 
 
 const defaultGateway = "http://arweave.testnet1.bundlr.network/"
@@ -67,11 +67,12 @@ program
             spinny.text = "Staking in contract..."
             await sleep(15_000)
             spinny.text = "Joining validator contract..."
-            const res = await connection.join(BigInt(opts.stake), validatorUrl);
-            await sleep(15_000)
-            spinny.succeed("Done!")
 
-            console.log(JSON.stringify(res));
+            await connection.join(BigInt(opts.stake), validatorUrl);
+
+            await sleep(15_000)
+
+            spinny.succeed("Done!")
         } catch (e) {
             if (spinny) {
                 spinny.fail(`Error joining - ${e.stack ?? e.message ?? e}`)
