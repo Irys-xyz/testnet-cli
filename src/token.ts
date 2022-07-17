@@ -207,9 +207,13 @@ export class TokenContractImpl
     async write(input: any): Promise<string | null> {
         const dwRes = await this.dryWrite(input)
         if (dwRes.type !== "ok") {
-            throw new Error("Simulated contract interaction failed!")
+            throw new Error(`Simulated contract interaction failed! - ${dwRes.errorMessage}`)
         }
-        return this._mainnet ? this.bundleInteraction(input).then(r => r.originalTxId) : this.writeInteraction(input);
+        const res = this._mainnet ? await this.bundleInteraction(input).then(r => r.originalTxId) : await this.writeInteraction(input);
+        if (!res) {
+            throw new Error("Unable to post interaction")
+        }
+        return res
     }
 }
 
