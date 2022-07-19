@@ -34,6 +34,6 @@
     "commander": "^9.3.0",
     "ora": "=5.4.1",
     "tslib": "^2.4.0",
-    "warp-contracts": "^1.1.8"
+    "warp-contracts": "^1.1.13"
   }
 }

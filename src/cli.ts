@@ -51,10 +51,10 @@ program
             // connect to token, assign allowance of stake to validator contract for foreign call
 
             const tokenConnection = await tokenConnect(warp, token, wallet);
-            await tokenConnection.syncState(faucet)
+            await tokenConnection.syncState(`${faucet}/state`)
 
             const connection = await validatorConnect(warp, contract, wallet);
-            await connection.syncState(faucet)
+            await connection.syncState(`${faucet}/state`)
 
             spinny.text = "Checking stake value..."
             // get validator contract and determine minimum stake
@@ -101,7 +101,7 @@ program
             const { wallet, warp, token } = await commonInit(opts)
 
             const connection = await tokenConnect(warp, token, wallet);
-            await connection.syncState(faucet)
+            await connection.syncState(`${faucet}/state`)
 
             spinny.text = "Transferring tokens..."
             await connection.transfer(to, BigInt(amount));
@@ -181,7 +181,7 @@ program
             const { wallet, warp, arweave } = await commonInit(opts)
 
             const connection = await validatorConnect(warp, contract, wallet)
-            await connection.syncState(faucet)
+            await connection.syncState(`${faucet}/state`)
 
             const currentValidators = (await connection.nominatedValidators())
             if (currentValidators.includes(await arweave.wallets.jwkToAddress(wallet))) {
