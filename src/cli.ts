@@ -27,6 +27,7 @@ const defaultGateway = "http://arweave.testnet1.bundlr.network/"
 
 const faucet = "https://faucet.testnet1.bundlr.network"
 
+
 const program = new Command();
 
 program.version(version);
@@ -50,8 +51,10 @@ program
             // connect to token, assign allowance of stake to validator contract for foreign call
 
             const tokenConnection = await tokenConnect(warp, token, wallet);
+            await tokenConnection.syncState(faucet)
 
             const connection = await validatorConnect(warp, contract, wallet);
+            await connection.syncState(faucet)
 
             spinny.text = "Checking stake value..."
             // get validator contract and determine minimum stake
@@ -98,6 +101,7 @@ program
             const { wallet, warp, token } = await commonInit(opts)
 
             const connection = await tokenConnect(warp, token, wallet);
+            await connection.syncState(faucet)
 
             spinny.text = "Transferring tokens..."
             await connection.transfer(to, BigInt(amount));
@@ -136,6 +140,33 @@ program
         }
     })
 
+
+
+program
+    .command("check").description("Checks to see if a specific address is a validator in the provided contract")
+    .argument("<contract>", "address of the contract to query")
+    .argument("<address>", "address to query")
+    .action(async (contract, address, /* opts */) => {
+        let spinny: Ora
+        try {
+            spinny = ora("Checking validator status (some steps might take a while) ...").start()
+            const { state } = (await axios.get(`${faucet}/contract/validator/${contract}`)).data
+
+            if (state.validators?.[address]) {
+                spinny.succeed(`${address} is a validator for contract ${contract}`)
+            } else {
+                spinny.fail(`${address} is NOT a validator for contract ${contract}`)
+            }
+
+        } catch (e) {
+            if (spinny) {
+                spinny.fail(`Error checking validator status - ${e.stack ?? e.message ?? e}`)
+                return
+            }
+            console.log(`Error checking validator status - ${e.stack ?? e.message ?? e}`)
+        }
+    })
+
 program
     .command("leave").description("Leaves the provided validator contract (if able to) and returns the stake to the account")
     .argument("<contract>", "Address of the validator contract to leave")
@@ -148,7 +179,9 @@ program
             spinny = ora("Checking leave status (some steps might take a while) ...").start()
 
             const { wallet, warp, arweave } = await commonInit(opts)
+
             const connection = await validatorConnect(warp, contract, wallet)
+            await connection.syncState(faucet)
 
             const currentValidators = (await connection.nominatedValidators())
             if (currentValidators.includes(await arweave.wallets.jwkToAddress(wallet))) {
@@ -188,7 +221,7 @@ async function commonInit(args): Promise<{ wallet: ArWallet | null, warp: Warp, 
     });
     const { token, bundler } = await (await axios.get(faucet)).data
 
-    const warp = WarpNodeFactory.fileCachedBased(arweave, ".swcache").useArweaveGateway().build();
+    const warp = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
     return { wallet, warp, arweave, token, bundler }
 }
 
