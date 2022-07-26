@@ -23,7 +23,7 @@ LoggerFactory.INST.logLevel("error");
 // LoggerFactory.INST.logLevel("trace", "WasmContractHandlerApi");
 
 
-const defaultGateway = "http://arweave.testnet1.bundlr.network/"
+const defaultGateway = "http://arweave.testnet1.bundlr.network"
 
 const faucet = "https://faucet.testnet1.bundlr.network"
 
